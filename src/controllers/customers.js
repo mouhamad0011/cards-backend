@@ -35,7 +35,7 @@ const getCustomersByUser = async (req, res) => {
 
 // hey lamma hada yshtere
 const addPurchase = async (req, res) => {
-    const { customerId, amount, forPeople } = req.body;
+    const { addPurchase } = req.body;
     try {
         if (!customerId || !amount ) throw Error("All fields must be filled!");
 
