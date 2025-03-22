@@ -9,9 +9,10 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
-// const userRoutes = require('./routes/userRoute');
-// app.use('/users', userRoutes);
-
+const userRoutes = require('./routes/users');
+app.use('/users', userRoutes);
+const customerRoutes = require('./routes/customers');
+app.use('/customers', customerRoutes);
 
 
 app.listen(process.env.PORT,()=>{
