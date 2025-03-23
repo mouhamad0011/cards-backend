@@ -94,4 +94,22 @@ const deleteCustomer = async (req, res) => {
     }
 }
 
-module.exports = { addCustomer, getCustomersByUser, addPurchase, addPayment, deleteCustomer };
+const editCustomer = async (req, res) => {
+    const { customerId, name, phone } = req.body;
+    try {
+        if (!customerId) throw Error("Customer ID is required");
+
+        const customer = await Customer.findById(customerId);
+        if (!customer) throw Error("Customer not found");
+        if (name) customer.name = name;
+        if (phone) customer.phone = phone;
+
+        await customer.save();
+
+        res.status(200).json({ message: "Customer updated successfully", customer });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to update customer", error: error.message });
+    }
+};
+
+module.exports = { addCustomer, getCustomersByUser, addPurchase, addPayment, deleteCustomer, editCustomer };
