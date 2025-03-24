@@ -11,6 +11,7 @@ const customerSchema = new mongoose.Schema({
       amount: Number,
       date: { type: Date, default: Date.now },
       for: String, 
+      description: String,
     },
   ],
 });

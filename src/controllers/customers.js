@@ -35,7 +35,7 @@ const getCustomersByUser = async (req, res) => {
 
 // hey lamma hada yshtere
 const addPurchase = async (req, res) => {
-    const { addPurchase } = req.body;
+    const { customerId, amount, forPeople, description, userId  } = req.body;
     try {
         if (!customerId || !amount ) throw Error("All fields must be filled!");
 
@@ -45,13 +45,14 @@ const addPurchase = async (req, res) => {
         customer.transactions.push({
             type: "purchase",
             amount,
-            for: forPeople || ""
+            for: forPeople || "",
+            description: description || ""
         });
 
-        customer.total += amount;
+        customer.total = Number(customer.total) + Number(amount);
         await customer.save();
-
-        res.status(200).json({ message: "Purchase added successfully", balance: customer.balance });
+        const customers = await Customer.find({ userId });
+        res.status(200).json({ message: "Purchase added successfully", customers });
     } catch (error) {
         res.status(500).json({ message: "Failed to add purchase", error: error.message });
     }
@@ -59,7 +60,7 @@ const addPurchase = async (req, res) => {
 
 // hey lamma hada ydfa3
 const addPayment = async (req, res) => {
-    const { customerId, amount, forPeople } = req.body;
+    const { customerId, amount, forPeople, description, userId } = req.body;
     try {
         if (!customerId || !amount) throw Error("All fields must be filled!");
 
@@ -69,13 +70,14 @@ const addPayment = async (req, res) => {
         customer.transactions.push({
             type: "payment",
             amount,
-            for: forPeople || ""
+            for: forPeople || "",
+            description: description || ""
         });
 
-        customer.total -= amount;
+        customer.total = Number(customer.total) - Number(amount);
         await customer.save();
-
-        res.status(200).json({ message: "Payment recorded successfully", balance: customer.balance });
+        const customers = await Customer.find({ userId });
+        res.status(200).json({ message: "Payment recorded successfully", customers });
     } catch (error) {
         res.status(500).json({ message: "Failed to record payment", error: error.message });
     }
@@ -86,9 +88,10 @@ const deleteCustomer = async (req, res) => {
     try {
         if(!id)throw Error("No id passed as parameter");
         const resultat = await Customer.findByIdAndDelete({ _id:id });
+        const userId = resultat.userId;
         if (!resultat) throw Error("An error occured");
-        const users =await User.find({});
-        res.status(200).json({ message: "Customer deleted successfully", users});
+        const customers =await Customer.find({userId});
+        res.status(200).json({ message: "Customer deleted successfully", customers});
     } catch (error) {
         res.status(500).json({ message: "An error occured during deleting the customer", error: error.message })
     }
@@ -112,4 +115,20 @@ const editCustomer = async (req, res) => {
     }
 };
 
-module.exports = { addCustomer, getCustomersByUser, addPurchase, addPayment, deleteCustomer, editCustomer };
+const clearTransactionsHistory = async (req, res) => {
+    const { id } = req.params;
+    try {
+        if(!id)throw Error("No id passed as parameter");
+        const resultat = await Customer.findById({ _id:id });
+        if (!resultat) throw Error("An error occured");
+        const userId = resultat.userId;
+        resultat.transactions = [];
+        await resultat.save();
+        const customers =await Customer.find({userId});
+        res.status(200).json({ message: "Transactions history cleared successfully", customers});
+    } catch (error) {
+        res.status(500).json({ message: "An error occured during clearing transactions history", error: error.message })
+    }
+}
+
+module.exports = { addCustomer, getCustomersByUser, addPurchase, addPayment, deleteCustomer, editCustomer, clearTransactionsHistory };

@@ -6,7 +6,8 @@ addCustomer,
 addPayment,
 addPurchase,
 deleteCustomer,
-editCustomer
+editCustomer,
+clearTransactionsHistory
 } = require("../controllers/customers");
 
 router.get("/getCustomersByUser/:userId", getCustomersByUser);
@@ -15,5 +16,6 @@ router.post("/addPayment", addPayment);
 router.post("/addPurchase", addPurchase);
 router.post("/editCustomer", editCustomer);
 router.delete("/deleteCustomer/:id", deleteCustomer);
+router.delete("/clearTransactionsHistory/:id", clearTransactionsHistory);
 
 module.exports = router;

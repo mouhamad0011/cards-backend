@@ -74,17 +74,17 @@ const getAll = async (_, res) => {
     }
 }
 
-// const deleteUser = async (req, res) => {
-//     const { Id } = req.params;
-//     try {
-//         if(!Id)throw Error("No id passed as parameter");
-//         const resultat = await User.findByIdAndDelete({ _id:Id });
-//         if (!resultat) throw Error("An error occured");
-//         const users =await User.find({});
-//         res.status(200).json({ message: "One of users deleted successfully", users});
-//     } catch (error) {
-//         res.status(500).json({ message: "An error occured during deleting a user", error: error.message })
-//     }
-// }
+const deleteUser = async (req, res) => {
+    const { id } = req.params;
+    try {
+        if(!id)throw Error("No id passed as parameter");
+        const resultat = await User.findByIdAndDelete({ _id:id });
+        if (!resultat) throw Error("An error occured");
+        const users =await User.find({});
+        res.status(200).json({ message: "One of users deleted successfully", users});
+    } catch (error) {
+        res.status(500).json({ message: "An error occured during deleting a user", error: error.message })
+    }
+}
 
-module.exports = {register, login, getAll};
+module.exports = {register, login, getAll, deleteUser};
