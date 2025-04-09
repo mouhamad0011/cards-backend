@@ -131,4 +131,62 @@ const clearTransactionsHistory = async (req, res) => {
     }
 }
 
-module.exports = { addCustomer, getCustomersByUser, addPurchase, addPayment, deleteCustomer, editCustomer, clearTransactionsHistory };
+const editTransaction = async (req, res) => {
+    const { customerId, transactionId, amount, forPeople, description, userId } = req.body;
+
+    try {
+        if (!customerId || !transactionId || !amount) throw Error("All fields must be filled!");
+
+        const customer = await Customer.findById(customerId);
+        if (!customer) throw Error("Customer not found");
+
+        const transaction = customer.transactions.id(transactionId);
+        if (!transaction) throw Error("Transaction not found");
+        if (transaction.type === "purchase") {
+            customer.total = Number(customer.total) - Number(transaction.amount) + Number(amount);
+        } else if (transaction.type === "payment") {
+            customer.total = Number(customer.total) + Number(transaction.amount) - Number(amount);
+        }
+
+        transaction.amount = amount;
+        transaction.for = forPeople || "";
+        transaction.description = description || "";
+
+        await customer.save();
+        const customers = await Customer.find({ userId });
+        res.status(200).json({ message: "Transaction edited successfully", customers });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to edit transaction", error: error.message });
+    }
+};
+
+const deleteTransaction = async (req, res) => {
+    try {
+      const { transactionId, customerId, userId } = req.params;
+  
+      const customer = await Customer.findById(customerId);
+      if (!customer) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      const transactionIndex = customer.transactions.findIndex(
+        (t) => t._id.toString() === transactionId
+      );
+      if (transactionIndex === -1) {
+        return res.status(404).json({ message: "Transaction not found" });
+      }
+      customer.transactions.splice(transactionIndex, 1);
+      await customer.save();
+      const customers = await Customer.find({ userId });
+      res.status(200).json({
+        message: "Transaction deleted successfully",
+        customers,
+      });
+  
+    } catch (error) {
+      res.status(500).json({
+        message: "Error deleting transaction",
+        error: error.message,
+      });
+    }
+  };
+module.exports = { addCustomer, getCustomersByUser, addPurchase, addPayment, deleteCustomer, editCustomer, clearTransactionsHistory, editTransaction, deleteTransaction };
